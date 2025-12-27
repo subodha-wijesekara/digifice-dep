@@ -1,7 +1,26 @@
+"use client"
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, CheckCircle } from "lucide-react";
+import { Users, FileText, BookOpen } from "lucide-react";
 
 export default function AdminDashboard() {
+    const [stats, setStats] = useState({
+        users: { total: 0, students: 0, lecturers: 0 },
+        modules: { total: 0 }
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        fetch('/api/stats')
+            .then(res => res.json())
+            .then(data => {
+                setStats(data);
+                setIsLoading(false);
+            })
+            .catch(err => console.error(err));
+    }, []);
+
     return (
         <div className="space-y-6">
             <div>
@@ -16,27 +35,29 @@ export default function AdminDashboard() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">1,234</div>
-                        <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                        <div className="text-2xl font-bold">{isLoading ? "..." : stats.users.total}</div>
+                        <p className="text-xs text-muted-foreground">
+                            {stats.users.students} Students, {stats.users.lecturers} Lecturers
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+                        <CardTitle className="text-sm font-medium">Active Modules</CardTitle>
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{isLoading ? "..." : stats.modules.total}</div>
+                        <p className="text-xs text-muted-foreground">Total modules in system</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">System Status</CardTitle>
                         <FileText className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">12</div>
-                        <p className="text-xs text-muted-foreground">+2 since yesterday</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">System Health</CardTitle>
-                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">Good</div>
+                        <div className="text-2xl font-bold">Online</div>
                         <p className="text-xs text-muted-foreground">All systems operational</p>
                     </CardContent>
                 </Card>
