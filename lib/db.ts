@@ -31,7 +31,7 @@ async function connectToDatabase() {
       return mongoose;
     });
   }
-  
+
   try {
     cached.conn = await cached.promise;
   } catch (e) {
@@ -42,4 +42,5 @@ async function connectToDatabase() {
   return cached.conn;
 }
 
+export const connectToDB = connectToDatabase;
 export default connectToDatabase;

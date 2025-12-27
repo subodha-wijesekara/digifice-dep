@@ -43,6 +43,27 @@ export default function ResultsPage() {
     const [modules, setModules] = useState<Module[]>([]);
     const [isLoadingModules, setIsLoadingModules] = useState(false);
 
+    // Recent Modules
+    const [recentModules, setRecentModules] = useState<Module[]>([]);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("digifice_recent_modules");
+        if (stored) {
+            try {
+                setRecentModules(JSON.parse(stored));
+            } catch (e) {
+                console.error("Failed to parse recent modules", e);
+            }
+        }
+    }, []);
+
+    const addToRecent = (module: Module) => {
+        const updated = [module, ...recentModules.filter(m => m._id !== module._id)].slice(0, 5);
+        setRecentModules(updated);
+        localStorage.setItem("digifice_recent_modules", JSON.stringify(updated));
+        router.push(`/admin/results/modules/${module._id}`);
+    };
+
     // Load initial hierarchy
     useEffect(() => {
         fetch('/api/hierarchy')
@@ -93,6 +114,7 @@ export default function ResultsPage() {
                 <p className="text-muted-foreground">Browse modules by faculty to manage results.</p>
             </div>
 
+
             {/* Hierarchy Selectors */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -138,6 +160,29 @@ export default function ResultsPage() {
                 </div>
             </div>
 
+            {/* Recently Accessed */}
+            {recentModules.length > 0 && (
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold flex items-center gap-2 text-muted-foreground">
+                        <Layers className="h-5 w-5" />
+                        Recently Accessed
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {recentModules.map(module => (
+                            <Card key={module._id} className="hover:bg-accent/50 transition-colors cursor-pointer border-dashed" onClick={() => addToRecent(module)}>
+                                <CardHeader className="p-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="font-semibold text-sm truncate w-3/4" title={module.name}>{module.name}</span>
+                                        <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{module.code}</span>
+                                    </div>
+                                    <CardDescription className="text-xs">{module.semester}</CardDescription>
+                                </CardHeader>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Modules Grid */}
             {selectedDegree && (
                 <div className="space-y-4">
@@ -158,7 +203,7 @@ export default function ResultsPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {modules.map(module => (
-                                <Card key={module._id} className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => router.push(`/admin/results/modules/${module._id}`)}>
+                                <Card key={module._id} className="hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => addToRecent(module)}>
                                     <CardHeader>
                                         <CardTitle className="flex justify-between items-start">
                                             <span>{module.name}</span>

@@ -62,9 +62,27 @@ const Result = mongoose.models.Result || mongoose.model('Result', ResultSchema);
 
 const seedUsers = [
     { name: "John Admin", email: "admin@digifice.com", role: "admin", password: "password123" },
+    { name: "Super Admin", email: "super@digifice.com", role: "admin", password: "password123" },
+
+    // Lecturers
     { name: "Jane Lecturer", email: "lecturer@digifice.com", role: "lecturer", password: "password123" },
+    { name: "Dr. Alan Grant", email: "alan@digifice.com", role: "lecturer", password: "password123" },
+    { name: "Prof. Sarah Connor", email: "sarah@digifice.com", role: "lecturer", password: "password123" },
+    { name: "Dr. Henry Wu", email: "henry@digifice.com", role: "lecturer", password: "password123" },
+    { name: "Prof. Ian Malcolm", email: "ian@digifice.com", role: "lecturer", password: "password123" },
+    { name: "Dr. Ellie Sattler", email: "ellie@digifice.com", role: "lecturer", password: "password123" },
+
+    // Students
     { name: "Alice Student", email: "alice@digifice.com", role: "student", password: "password123" },
     { name: "Bob Student", email: "bob@digifice.com", role: "student", password: "password123" },
+    { name: "Charlie Brown", email: "charlie@digifice.com", role: "student", password: "password123" },
+    { name: "Diana Prince", email: "diana@digifice.com", role: "student", password: "password123" },
+    { name: "Evan Wright", email: "evan@digifice.com", role: "student", password: "password123" },
+    { name: "Fiona Apple", email: "fiona@digifice.com", role: "student", password: "password123" },
+    { name: "George Michael", email: "george@digifice.com", role: "student", password: "password123" },
+    { name: "Hannah Montana", email: "hannah@digifice.com", role: "student", password: "password123" },
+    { name: "Ivan Drago", email: "ivan@digifice.com", role: "student", password: "password123" },
+    { name: "Jack Sparrow", email: "jack@digifice.com", role: "student", password: "password123" },
 ];
 
 async function seed() {
@@ -114,37 +132,81 @@ async function seed() {
         console.log("Seeding Modules...");
         const seModules = [
             { name: "Introduction to Programming", code: "SE101", credits: 4, semester: "Sem 1", degreeProgram: bscSE._id },
+            { name: "Computer Systems", code: "SE103", credits: 3, semester: "Sem 1", degreeProgram: bscSE._id },
+
             { name: "Web Development", code: "SE102", credits: 3, semester: "Sem 2", degreeProgram: bscSE._id },
+            { name: "Database Systems I", code: "SE104", credits: 4, semester: "Sem 2", degreeProgram: bscSE._id },
+            { name: "Object Oriented Programming", code: "SE105", credits: 4, semester: "Sem 2", degreeProgram: bscSE._id },
+
             { name: "Data Structures", code: "SE201", credits: 4, semester: "Sem 3", degreeProgram: bscSE._id },
+            { name: "Software Engineering Principles", code: "SE202", credits: 3, semester: "Sem 3", degreeProgram: bscSE._id },
+
+            { name: "Operating Systems", code: "SE203", credits: 4, semester: "Sem 4", degreeProgram: bscSE._id },
+            { name: "Requirement Engineering", code: "SE204", credits: 3, semester: "Sem 4", degreeProgram: bscSE._id },
+
             { name: "Software Architecture", code: "SE301", credits: 4, semester: "Sem 5", degreeProgram: bscSE._id },
+            { name: "Human Computer Interaction", code: "SE302", credits: 3, semester: "Sem 5", degreeProgram: bscSE._id },
+
+            { name: "Distributed Systems", code: "SE303", credits: 4, semester: "Sem 6", degreeProgram: bscSE._id },
+            { name: "Quality Assurance", code: "SE304", credits: 3, semester: "Sem 6", degreeProgram: bscSE._id },
+
+            { name: "Cloud Computing", code: "SE401", credits: 4, semester: "Sem 7", degreeProgram: bscSE._id },
+            { name: "Final Year Project I", code: "SE402", credits: 6, semester: "Sem 7", degreeProgram: bscSE._id },
+
+            { name: "Final Year Project II", code: "SE403", credits: 6, semester: "Sem 8", degreeProgram: bscSE._id },
         ];
 
         const netModules = [
             { name: "Network Fundamentals", code: "CN101", credits: 4, semester: "Sem 1", degreeProgram: bscNet._id },
+            { name: "IT Essentials", code: "CN102", credits: 3, semester: "Sem 1", degreeProgram: bscNet._id },
+
             { name: "Routing and Switching", code: "CN201", credits: 4, semester: "Sem 2", degreeProgram: bscNet._id },
+            { name: "Server Administration", code: "CN202", credits: 4, semester: "Sem 2", degreeProgram: bscNet._id },
+
             { name: "Network Security", code: "CN301", credits: 4, semester: "Sem 5", degreeProgram: bscNet._id },
+            { name: "Wireless Networks", code: "CN302", credits: 3, semester: "Sem 5", degreeProgram: bscNet._id },
+
+            { name: "Cyber Security", code: "CN401", credits: 4, semester: "Sem 7", degreeProgram: bscNet._id },
         ];
 
         const csModules = [
             { name: "Introduction to CS", code: "CS101", credits: 4, semester: "Sem 1", degreeProgram: bscCS._id },
+            { name: "Mathematics for Computing", code: "CS102", credits: 3, semester: "Sem 1", degreeProgram: bscCS._id },
+
+            { name: "Digital Interpretation", code: "CS103", credits: 3, semester: "Sem 2", degreeProgram: bscCS._id },
+
             { name: "Algorithms", code: "CS201", credits: 4, semester: "Sem 3", degreeProgram: bscCS._id },
+            { name: "Computer Graphics", code: "CS202", credits: 3, semester: "Sem 3", degreeProgram: bscCS._id },
+
             { name: "Artificial Intelligence", code: "CS301", credits: 4, semester: "Sem 5", degreeProgram: bscCS._id },
+            { name: "Machine Learning", code: "CS302", credits: 4, semester: "Sem 5", degreeProgram: bscCS._id },
+
+            { name: "Data Science", code: "CS401", credits: 4, semester: "Sem 7", degreeProgram: bscCS._id },
         ];
 
         const bizModules = [
             { name: "Principles of Management", code: "BM101", credits: 3, semester: "Sem 1", degreeProgram: bba._id },
             { name: "Marketing Basics", code: "BM102", credits: 3, semester: "Sem 1", degreeProgram: bba._id },
             { name: "Financial Accounting", code: "BM103", credits: 3, semester: "Sem 2", degreeProgram: bba._id },
+            { name: "Business Law", code: "BM104", credits: 3, semester: "Sem 2", degreeProgram: bba._id },
+            { name: "HR Management", code: "BM201", credits: 3, semester: "Sem 3", degreeProgram: bba._id },
+            { name: "Organizational Behavior", code: "BM202", credits: 3, semester: "Sem 3", degreeProgram: bba._id },
         ];
 
         const accModules = [
             { name: "Financial Accounting I", code: "ACC101", credits: 3, semester: "Sem 1", degreeProgram: bscAcc._id },
+            { name: "Microeconomics", code: "ACC102", credits: 3, semester: "Sem 1", degreeProgram: bscAcc._id },
             { name: "Management Accounting", code: "ACC201", credits: 3, semester: "Sem 3", degreeProgram: bscAcc._id },
+            { name: "Taxation", code: "ACC202", credits: 3, semester: "Sem 3", degreeProgram: bscAcc._id },
+            { name: "Auditing", code: "ACC301", credits: 3, semester: "Sem 5", degreeProgram: bscAcc._id },
         ];
 
         const civilModules = [
             { name: "Engineering Mechanics", code: "CE101", credits: 4, semester: "Sem 1", degreeProgram: bscCivil._id },
+            { name: "Engineering Drawing", code: "CE102", credits: 3, semester: "Sem 1", degreeProgram: bscCivil._id },
             { name: "Structural Analysis", code: "CE201", credits: 4, semester: "Sem 3", degreeProgram: bscCivil._id },
+            { name: "Fluid Mechanics", code: "CE202", credits: 4, semester: "Sem 3", degreeProgram: bscCivil._id },
+            { name: "Geotechnical Engineering", code: "CE301", credits: 4, semester: "Sem 5", degreeProgram: bscCivil._id },
         ];
 
         await Module.insertMany([
