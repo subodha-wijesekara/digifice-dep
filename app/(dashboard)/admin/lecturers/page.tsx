@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AssignmentDialog } from "@/components/dashboard/AssignmentDialog"
+import { AddLecturerDialog } from "@/components/dashboard/AddLecturerDialog"
 
 interface Lecturer {
     _id: string;
@@ -82,6 +83,7 @@ export default function LecturerManagementPage() {
                         Manage academic staff assignments and departments.
                     </p>
                 </div>
+                <AddLecturerDialog onSuccess={fetchLecturers} />
             </div>
 
             <Card>
