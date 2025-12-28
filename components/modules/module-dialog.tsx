@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
-// Define Module Type locally for now or import if we centralize
+// Define Module Type locally for now
 export interface Module {
     _id: string
     name: string
@@ -59,7 +59,6 @@ interface ModuleDialogProps {
 
 export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDialogProps) {
     const [isLoading, setIsLoading] = useState(false)
-    const [hierarchy, setHierarchy] = useState<any[]>([])
     const [faculties, setFaculties] = useState<any[]>([])
     const [departments, setDepartments] = useState<any[]>([])
     const [degrees, setDegrees] = useState<any[]>([])
@@ -79,39 +78,47 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
         },
     })
 
-    // Load hierarchy
+    // Load Faculties
     useEffect(() => {
         if (open) {
-            fetch('/api/hierarchy')
+            fetch('/api/hierarchy?type=faculty')
                 .then(res => res.json())
                 .then(data => {
-                    setHierarchy(data);
-                    setFaculties(data);
+                    if (Array.isArray(data)) setFaculties(data);
                 })
                 .catch(err => console.error("Failed to load hierarchy", err));
         }
     }, [open]);
 
-    // Handle cascading selects
+    // Handle Faculty Change -> Fetch Departments
     useEffect(() => {
         if (selectedFaculty) {
-            const fac = hierarchy.find(f => f._id === selectedFaculty);
-            setDepartments(fac?.departments || []);
+            fetch(`/api/hierarchy?type=department&parentId=${selectedFaculty}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setDepartments(data);
+                    else setDepartments([]);
+                })
+                .catch(err => console.error("Failed to load departments", err));
         } else {
             setDepartments([]);
         }
-    }, [selectedFaculty, hierarchy]);
+    }, [selectedFaculty]);
 
+    // Handle Dept Change -> Fetch Degrees
     useEffect(() => {
         if (selectedDept) {
-            // Find dept in currently selected faculty (optimized) or search all
-            const fac = hierarchy.find(f => f._id === selectedFaculty);
-            const dept = fac?.departments.find((d: any) => d._id === selectedDept);
-            setDegrees(dept?.degrees || []);
+            fetch(`/api/hierarchy?type=degree&parentId=${selectedDept}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setDegrees(data);
+                    else setDegrees([]);
+                })
+                .catch(err => console.error("Failed to load degrees", err));
         } else {
             setDegrees([]);
         }
-    }, [selectedDept, selectedFaculty, hierarchy]);
+    }, [selectedDept]);
 
     useEffect(() => {
         if (module) {
@@ -120,8 +127,6 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
             const isPopulated = typeof degreeInfo === 'object' && degreeInfo !== null;
 
             if (isPopulated) {
-                // Determine Faculty and Dept IDs
-                // Structure: degree -> department -> faculty
                 const deptInfo = degreeInfo.department;
                 const facInfo = deptInfo?.faculty;
 
@@ -152,13 +157,13 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
     const onSubmit = async (values: z.infer<typeof moduleSchema>) => {
         setIsLoading(true);
         try {
-            const url = module ? `/api/modules/${module._id}` : '/api/modules';
+            // Updated API endpoint
+            const url = module ? `/api/admin/modules?id=${module._id}` : '/api/admin/modules';
             const method = module ? 'PUT' : 'POST';
 
-            // Ensure degreeProgram is just the ID (zod handles string, but just to be safe if we mess with types)
-            const body = {
+            const body = module ? { id: module._id, ...values } : {
                 ...values,
-                degreeProgram: values.degreeProgram
+                degreeId: values.degreeProgram // API expects degreeId
             };
 
             const res = await fetch(url, {
@@ -178,7 +183,6 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
         } catch (error: any) {
             console.error(error);
             toast.error(error.message);
-            // Don't close dialog on error so user can fix
         } finally {
             setIsLoading(false);
         }
@@ -241,7 +245,7 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
-                                        disabled={!selectedDept && !module} // Disable if no dept selected (unless editing)
+                                        disabled={!selectedDept && !module}
                                     >
                                         <FormControl>
                                             <SelectTrigger>
@@ -249,12 +253,9 @@ export function ModuleDialog({ open, onOpenChange, module, onSuccess }: ModuleDi
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {/* Show degrees from selected dept, OR current degree if editing */}
                                             {degrees.length > 0 ? degrees.map((dp) => (
                                                 <SelectItem key={dp._id} value={dp._id}>{dp.name}</SelectItem>
                                             )) : module && (
-                                                // Fallback for edit mode if we haven't traversed hierarchy
-                                                // Ideally we should still load the list, but this is a quick fix to show current value
                                                 <SelectItem value={field.value}>Current Degree</SelectItem>
                                             )}
                                         </SelectContent>

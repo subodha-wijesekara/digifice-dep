@@ -9,15 +9,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, BookOpen, Layers } from "lucide-react"
+import { ArrowRight, BookOpen, Layers, ChevronDown, ChevronRight } from "lucide-react"
 
 interface HierarchyNode {
     _id: string;
     name: string;
-    departments?: HierarchyNode[];
-    degrees?: HierarchyNode[];
 }
 
 interface Module {
@@ -45,6 +43,7 @@ export default function ResultsPage() {
 
     // Recent Modules
     const [recentModules, setRecentModules] = useState<Module[]>([]);
+    const [isRecentCollapsed, setIsRecentCollapsed] = useState(true);
 
     useEffect(() => {
         const stored = localStorage.getItem("digifice_recent_modules");
@@ -64,42 +63,65 @@ export default function ResultsPage() {
         router.push(`/admin/results/modules/${module._id}`);
     };
 
-    // Load initial hierarchy
+    // Load initial hierarchy (Faculties)
     useEffect(() => {
-        fetch('/api/hierarchy')
+        fetch('/api/hierarchy?type=faculty')
             .then(res => res.json())
-            .then(data => setFaculties(data || []))
+            .then(data => {
+                if (Array.isArray(data)) setFaculties(data);
+            })
             .catch(err => console.error("Failed to load hierarchy", err));
     }, []);
 
-    // Handle Faculty Change
+    // Handle Faculty Change -> Fetch Departments
     useEffect(() => {
-        if (selectedFaculty && faculties.length > 0) {
-            const fac = faculties.find(f => f._id === selectedFaculty);
-            setDepartments(fac?.departments || []);
+        if (selectedFaculty) {
+            fetch(`/api/hierarchy?type=department&parentId=${selectedFaculty}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setDepartments(data);
+                    else setDepartments([]);
+                })
+                .catch(err => console.error("Failed to load departments", err));
+
             setSelectedDept("");
             setSelectedDegree("");
             setModules([]);
+            setDegrees([]);
+        } else {
+            setDepartments([]);
         }
-    }, [selectedFaculty, faculties]);
+    }, [selectedFaculty]);
 
-    // Handle Dept Change
+    // Handle Dept Change -> Fetch Degrees
     useEffect(() => {
-        if (selectedDept && departments.length > 0) {
-            const dept = departments.find(d => d._id === selectedDept);
-            setDegrees(dept?.degrees || []);
+        if (selectedDept) {
+            fetch(`/api/hierarchy?type=degree&parentId=${selectedDept}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setDegrees(data);
+                    else setDegrees([]);
+                })
+                .catch(err => console.error("Failed to load degrees", err));
+
             setSelectedDegree("");
             setModules([]);
+        } else {
+            setDegrees([]);
         }
-    }, [selectedDept, departments]);
+    }, [selectedDept]);
 
     // Handle Degree Change -> Fetch Modules
     useEffect(() => {
         if (selectedDegree) {
             setIsLoadingModules(true);
-            fetch(`/api/modules?degreeProgram=${selectedDegree}`)
+            // Use the new GET endpoint for modules
+            fetch(`/api/admin/modules?degreeId=${selectedDegree}`)
                 .then(res => res.json())
-                .then(data => setModules(data))
+                .then(data => {
+                    if (Array.isArray(data)) setModules(data);
+                    else setModules([]);
+                })
                 .catch(err => console.error(err))
                 .finally(() => setIsLoadingModules(false));
         } else {
@@ -163,23 +185,29 @@ export default function ResultsPage() {
             {/* Recently Accessed */}
             {recentModules.length > 0 && (
                 <div className="space-y-4">
-                    <h3 className="text-xl font-semibold flex items-center gap-2 text-muted-foreground">
+                    <button
+                        onClick={() => setIsRecentCollapsed(!isRecentCollapsed)}
+                        className="flex items-center gap-2 text-xl font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    >
                         <Layers className="h-5 w-5" />
                         Recently Accessed
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {recentModules.map(module => (
-                            <Card key={module._id} className="hover:bg-accent/50 transition-colors cursor-pointer border-dashed" onClick={() => addToRecent(module)}>
-                                <CardHeader className="p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-semibold text-sm truncate w-3/4" title={module.name}>{module.name}</span>
-                                        <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{module.code}</span>
-                                    </div>
-                                    <CardDescription className="text-xs">{module.semester}</CardDescription>
-                                </CardHeader>
-                            </Card>
-                        ))}
-                    </div>
+                        {isRecentCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    </button>
+                    {!isRecentCollapsed && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                            {recentModules.map(module => (
+                                <Card key={module._id} className="hover:bg-accent/50 transition-colors cursor-pointer border-dashed" onClick={() => addToRecent(module)}>
+                                    <CardHeader className="p-4">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="font-semibold text-sm truncate w-3/4" title={module.name}>{module.name}</span>
+                                            <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono">{module.code}</span>
+                                        </div>
+                                        <CardDescription className="text-xs">{module.semester}</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -191,9 +219,6 @@ export default function ResultsPage() {
                             <BookOpen className="h-5 w-5" />
                             Modules
                         </h3>
-                        <Button onClick={() => window.location.href = '/admin/results/modules'}>
-                            Manage All Modules
-                        </Button>
                     </div>
 
                     {isLoadingModules ? (

@@ -23,6 +23,8 @@ export default function AdminLayout({
                         <a href="/admin/users" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">User Management</a>
                         <a href="/admin/results" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Results</a>
                         <a href="/admin/medical" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Medical Review</a>
+                        <a href="/admin/lecturers" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Lecturers</a>
+                        <a href="/admin/students" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Students</a>
                     </nav>
                 </div>
 

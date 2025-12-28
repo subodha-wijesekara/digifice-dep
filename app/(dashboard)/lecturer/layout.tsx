@@ -1,6 +1,7 @@
 import LogOutButton from "@/components/LogOutButton";
 import { ModeToggle } from "@/components/mode-toggle";
 import { BookOpen } from "lucide-react";
+import { LecturerTaskReminder } from "@/components/LecturerTaskReminder";
 
 export default function LecturerLayout({
     children,
@@ -22,6 +23,8 @@ export default function LecturerLayout({
                         <a href="/lecturer" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Dashboard</a>
                         <a href="/lecturer/courses" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">My Courses</a>
                         <a href="/lecturer/schedules" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Schedule</a>
+                        <a href="/lecturer/medicals" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Medical Requests</a>
+                        <a href="/lecturer/notifications" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Notifications</a>
                     </nav>
                 </div>
 
@@ -38,6 +41,7 @@ export default function LecturerLayout({
                     {children}
                 </div>
             </main>
+            <LecturerTaskReminder />
         </div>
     )
 }

@@ -4,9 +4,13 @@ import User from '@/models/User';
 import Module from '@/models/Module';
 import Medical from '@/models/Medical';
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 export async function GET() {
     try {
         await dbConnect();
+        const session = await getServerSession(authOptions);
 
         const [
             totalUsers,
@@ -30,6 +34,11 @@ export async function GET() {
             Medical.countDocuments({ status: 'rejected' })
         ]);
 
+        let lecturerModulesCount = 0;
+        if (session && session.user && session.user.role === 'lecturer') {
+            lecturerModulesCount = await Module.countDocuments({ leader: session.user.id });
+        }
+
         return NextResponse.json({
             users: {
                 total: totalUsers,
@@ -38,7 +47,8 @@ export async function GET() {
                 admins: totalAdmins
             },
             modules: {
-                total: totalModules
+                total: totalModules,
+                myCount: lecturerModulesCount
             },
             medical: {
                 pending: medicalPending,

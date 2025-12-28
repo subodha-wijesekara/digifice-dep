@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ForwardDialog } from "@/components/dashboard/ForwardDialog"
 import {
     Dialog,
     DialogContent,
@@ -17,24 +18,31 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 
 interface Medical {
-    _id: string
+    _id: string;
     student: {
-        _id: string
-        name: string
-        email: string
-        image?: string
-    }
-    status: 'pending' | 'approved_by_officer' | 'forwarded_to_dept' | 'rejected'
-    reason: string
-    startDate: string
-    endDate: string
-    officerComments?: string
-    adminComments?: string
+        image: string;
+        name: string;
+        email: string;
+        department?: {
+            _id: string;
+            name: string;
+            faculty: {
+                _id: string;
+                name: string;
+            }
+        }
+    };
+    status: string;
+    reason: string;
+    startDate: string;
+    endDate: string;
+    officerComments?: string;
+    adminComments?: string;
+    createdAt?: string;
 }
 
 export default function MedicalPage() {
@@ -43,7 +51,11 @@ export default function MedicalPage() {
     const [comments, setComments] = useState("")
     const [selectedMedical, setSelectedMedical] = useState<Medical | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-    const [actionType, setActionType] = useState<'approve' | 'reject' | 'forward' | null>(null)
+    const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
+
+    // New state for Forward Dialog
+    const [isForwardDialogOpen, setIsForwardDialogOpen] = useState(false)
+    const [forwardingRequest, setForwardingRequest] = useState<Medical | null>(null)
 
     const fetchMedicals = async () => {
         setIsLoading(true)
@@ -51,7 +63,8 @@ export default function MedicalPage() {
             const res = await fetch('/api/medical')
             if (res.ok) {
                 const data = await res.json()
-                setMedicals(data)
+                // Sort by date desc
+                setMedicals(data.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()))
             }
         } catch (error) {
             console.error(error)
@@ -74,12 +87,9 @@ export default function MedicalPage() {
         if (actionType === 'approve') {
             newStatus = 'approved_by_officer'
             updateBody = { status: newStatus, officerComments: comments }
-        } else if (actionType === 'forward') {
-            newStatus = 'forwarded_to_dept'
-            updateBody = { status: newStatus, adminComments: comments }
         } else if (actionType === 'reject') {
             newStatus = 'rejected'
-            updateBody = { status: newStatus, officerComments: comments } // Simplified: Officer rejects
+            updateBody = { status: newStatus, officerComments: comments }
         }
 
         try {
@@ -90,7 +100,7 @@ export default function MedicalPage() {
             })
 
             if (res.ok) {
-                toast.success(`Medical request ${actionType === 'forward' ? 'forwarded' : actionType}ed successfully`)
+                toast.success(`Medical request ${actionType}ed successfully`)
                 setIsDialogOpen(false)
                 setComments("")
                 fetchMedicals()
@@ -103,11 +113,16 @@ export default function MedicalPage() {
         }
     }
 
-    const openDialog = (medical: Medical, type: 'approve' | 'reject' | 'forward') => {
+    const openDialog = (medical: Medical, type: 'approve' | 'reject') => {
         setSelectedMedical(medical)
         setActionType(type)
         setComments("")
         setIsDialogOpen(true)
+    }
+
+    const openForwardDialog = (medical: Medical) => {
+        setForwardingRequest(medical)
+        setIsForwardDialogOpen(true)
     }
 
     const MedicalCard = ({ item }: { item: Medical }) => (
@@ -122,6 +137,11 @@ export default function MedicalPage() {
                         <div>
                             <CardTitle className="text-base">{item.student.name}</CardTitle>
                             <CardDescription>{item.student.email}</CardDescription>
+                            {item.student.department && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {item.student.department.name}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <Badge variant={
@@ -146,16 +166,7 @@ export default function MedicalPage() {
                         <p className="text-sm">
                             <span className="font-semibold">Dates:</span> {format(new Date(item.startDate), "PPP")} - {format(new Date(item.endDate), "PPP")}
                         </p>
-                        {item.medicalCertificateUrl && (
-                            <a
-                                href={item.medicalCertificateUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 text-sm text-blue-600 hover:underline mt-2 p-2 bg-blue-50 rounded w-fit"
-                            >
-                                <FileText className="h-4 w-4" /> View Certificate
-                            </a>
-                        )}
+                        {/* Assuming medicalCertificateUrl logic here if needed */}
                     </div>
                 </div>
                 {item.officerComments && (
@@ -183,8 +194,8 @@ export default function MedicalPage() {
                     </>
                 )}
                 {item.status === 'approved_by_officer' && (
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => openDialog(item, 'forward')}>
-                        <Send className="mr-2 h-4 w-4" /> Forward to Dept
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => openForwardDialog(item)}>
+                        <Send className="mr-2 h-4 w-4" /> Forward to Lecturer
                     </Button>
                 )}
                 {item.status === 'forwarded_to_dept' && (
@@ -228,9 +239,9 @@ export default function MedicalPage() {
 
                 <TabsContent value="history" className="mt-6">
                     {isLoading ? <div>Loading...</div> :
-                        medicals.filter(m => ['forwarded_to_dept', 'rejected'].includes(m.status)).length === 0 ?
+                        medicals.filter(m => ['forwarded_to_dept', 'rejected', 'approved_by_dept'].includes(m.status)).length === 0 ?
                             <div className="text-center py-10 text-muted-foreground">No history</div> :
-                            medicals.filter(m => ['forwarded_to_dept', 'rejected'].includes(m.status)).map(m => <MedicalCard key={m._id} item={m} />)
+                            medicals.filter(m => ['forwarded_to_dept', 'rejected', 'approved_by_dept'].includes(m.status)).map(m => <MedicalCard key={m._id} item={m} />)
                     }
                 </TabsContent>
             </Tabs>
@@ -239,14 +250,10 @@ export default function MedicalPage() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {actionType === 'approve' ? 'Approve Medical Request' :
-                                actionType === 'reject' ? 'Reject Medical Request' :
-                                    'Forward to Department'}
+                            {actionType === 'approve' ? 'Approve Medical Request' : 'Reject Medical Request'}
                         </DialogTitle>
                         <DialogDescription>
-                            {actionType === 'approve' ? 'Add comments as the Medical Officer (optional).' :
-                                actionType === 'reject' ? 'Reason for rejection (required).' :
-                                    'Add a note for the academic staff (optional).'}
+                            {actionType === 'approve' ? 'Add comments as the Medical Officer (optional).' : 'Reason for rejection (required).'}
                         </DialogDescription>
                     </DialogHeader>
                     <Textarea
@@ -262,6 +269,14 @@ export default function MedicalPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ForwardDialog
+                open={isForwardDialogOpen}
+                onOpenChange={setIsForwardDialogOpen}
+                requestId={forwardingRequest?._id || ""}
+                studentDepartmentId={forwardingRequest?.student.department?._id}
+                onSuccess={fetchMedicals}
+            />
         </div>
     )
 }

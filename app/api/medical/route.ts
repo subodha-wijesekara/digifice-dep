@@ -11,7 +11,11 @@ if (!User) {
 export async function GET() {
     try {
         await connectToDB();
-        const medicals = await Medical.find().populate('student', 'name email image').sort({ createdAt: -1 });
+        const medicals = await Medical.find().populate({
+            path: 'student',
+            select: 'name email image department',
+            populate: { path: 'department', select: 'name faculty' }
+        }).sort({ createdAt: -1 });
         return NextResponse.json(medicals);
     } catch (error) {
         console.error("Failed to fetch medicals:", error);
@@ -19,14 +23,26 @@ export async function GET() {
     }
 }
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 export async function POST(req: Request) {
     try {
         await connectToDB();
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
 
-        // Basic validation handling could go here
+        // Enforce the student to be the logged-in user
+        const newMedical = await Medical.create({
+            ...body,
+            student: session.user.id
+        });
 
-        const newMedical = await Medical.create(body);
         return NextResponse.json(newMedical, { status: 201 });
     } catch (error) {
         console.error("Failed to create medical:", error);

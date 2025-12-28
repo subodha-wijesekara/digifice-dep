@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { GraduationCap, Activity, FileText } from "lucide-react";
 import { StudentCharts } from "@/components/student-charts";
 
@@ -13,6 +13,7 @@ export default function StudentDashboard() {
     });
     const [rawResults, setRawResults] = useState<any[]>([]);
     const [rawMedicals, setRawMedicals] = useState<any[]>([]);
+    const [notices, setNotices] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -27,6 +28,11 @@ export default function StudentDashboard() {
                 const medicalsRes = await fetch('/api/medical');
                 const medicals = await medicalsRes.json();
                 if (Array.isArray(medicals)) setRawMedicals(medicals);
+
+                // Fetch Notices
+                const noticesRes = await fetch('/api/notices');
+                const noticesData = await noticesRes.json();
+                if (Array.isArray(noticesData)) setNotices(noticesData);
 
                 // Calculate CGPA
                 let cgpa = "0.00";

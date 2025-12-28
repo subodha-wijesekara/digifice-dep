@@ -10,6 +10,17 @@ const UserSchema = new Schema({
         enum: ['student', 'lecturer', 'admin'],
         default: 'student',
     },
+    department: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Department',
+        required: false,
+    },
+    degreeProgram: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'DegreeProgram',
+        required: false,
+    },
+    bulkUploadBatch: { type: String, required: false }, // Format: batch_TIMESTAMP
 }, { timestamps: true });
 
 const User = models.User || model('User', UserSchema);

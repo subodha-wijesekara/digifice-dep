@@ -1,34 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
+
+import { NextResponse } from 'next/server';
+import connectToDB from '@/lib/db';
 import Faculty from '@/models/Faculty';
 import Department from '@/models/Department';
 import DegreeProgram from '@/models/DegreeProgram';
+import Module from '@/models/Module';
 
-export async function GET(req: NextRequest) {
-    await dbConnect();
+export async function GET(request: Request) {
     try {
-        // Fetch all faculties with their departments and degree programs
-        // Since we are using references, we can't easily deep populate in one go without multiple queries or aggregations
-        // For simplicity and performance with small data, let's fetch lists and reconstruct or just return flat lists
+        await connectToDB();
+        const { searchParams } = new URL(request.url);
+        const type = searchParams.get('type');
+        const parentId = searchParams.get('parentId');
 
-        // Option 1: Aggregation (Better for hierarchy)
-        // Option 2: separate endpoints. 
-        // Let's try to return a structured object: [ { ...faculty, departments: [ { ...dept, degrees: [...] } ] } ]
+        // If no type provided, fallback to old behavior (full hierarchy) or just return faculties
+        // For this implementation, we enforce type to be explicit
+        if (!type) {
+            // Optional: Return all faculties as default entry point
+            const data = await Faculty.find({}).sort({ name: 1 });
+            return NextResponse.json(data);
+        }
 
-        const faculties = await Faculty.find({}).lean();
-        const hierarchies = await Promise.all(faculties.map(async (fac: any) => {
-            const departments = await Department.find({ faculty: fac._id }).lean();
+        let data;
 
-            const departmentsWithDegrees = await Promise.all(departments.map(async (dept: any) => {
-                const degrees = await DegreeProgram.find({ department: dept._id }).lean();
-                return { ...dept, degrees };
-            }));
+        switch (type) {
+            case 'faculty':
+                data = await Faculty.find({}).sort({ name: 1 });
+                break;
+            case 'department':
+                if (!parentId) return NextResponse.json({ error: "Missing parentId for department" }, { status: 400 });
+                data = await Department.find({ faculty: parentId }).sort({ name: 1 });
+                break;
+            case 'degree':
+                if (!parentId) return NextResponse.json({ error: "Missing parentId for degree" }, { status: 400 });
+                data = await DegreeProgram.find({ department: parentId }).sort({ name: 1 });
+                break;
+            case 'module':
+                if (!parentId) return NextResponse.json({ error: "Missing parentId for module" }, { status: 400 });
+                // Modules are linked to Degree Programs
+                data = await Module.find({ degreeProgram: parentId }).sort({ name: 1 });
+                break;
+            default:
+                return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+        }
 
-            return { ...fac, departments: departmentsWithDegrees };
-        }));
+        return NextResponse.json(data);
 
-        return NextResponse.json(hierarchies);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        console.error("Hierarchy API Error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

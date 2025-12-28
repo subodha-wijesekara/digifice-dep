@@ -54,7 +54,7 @@ export default function ModulesPage() {
 
     const fetchModules = async () => {
         try {
-            const res = await fetch("/api/modules");
+            const res = await fetch("/api/admin/modules");
             if (!res.ok) throw new Error("Failed to fetch modules");
             const data = await res.json();
             setModules(data);
@@ -72,7 +72,7 @@ export default function ModulesPage() {
 
     const handleDelete = async (module: Module) => {
         try {
-            const res = await fetch(`/api/modules/${module._id}`, {
+            const res = await fetch(`/api/admin/modules?id=${module._id}`, {
                 method: 'DELETE',
             });
 

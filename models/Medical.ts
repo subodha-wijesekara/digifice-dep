@@ -8,7 +8,7 @@ const MedicalSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'approved_by_officer', 'forwarded_to_dept', 'rejected'],
+        enum: ['pending', 'approved_by_officer', 'forwarded_to_dept', 'approved_by_dept', 'rejected'],
         default: 'pending',
     },
     reason: {
@@ -33,7 +33,12 @@ const MedicalSchema = new Schema({
     },
     adminComments: {
         type: String,
-        default: "",
+        default: '',
+    },
+    forwardedTo: { // The specific lecturer/staff member this request is forwarded to
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false,
     },
 }, { timestamps: true });
 

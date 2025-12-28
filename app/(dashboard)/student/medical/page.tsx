@@ -116,10 +116,7 @@ export default function StudentMedicalPage() {
             // Actually, let's fetch /api/users or similar? No.
             // Let's just use the first user ID found in the medicals list as "me" for demo purposes if list is not empty.
 
-            const demoStudentId = medicals.length > 0 ? medicals[0].student._id : "676efe072520306143534d02"; // Fallback
-
             const payload = {
-                student: demoStudentId,
                 reason,
                 startDate,
                 endDate,

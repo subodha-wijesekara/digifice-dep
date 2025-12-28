@@ -25,9 +25,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         await dbConnect();
         const { id } = await params;
         const body = await request.json();
-        const { name, email, role, password } = body;
+        const { name, email, role, password, department } = body;
 
         const updateData: any = { name, email, role };
+
+        if (department !== undefined) {
+            updateData.department = department; // Allow clearing it if null passed, or setting it
+        }
 
         if (password) {
             updateData.password = await bcrypt.hash(password, 10);

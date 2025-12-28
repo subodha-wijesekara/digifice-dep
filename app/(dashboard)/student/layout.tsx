@@ -2,6 +2,8 @@ import LogOutButton from "@/components/LogOutButton";
 import { ModeToggle } from "@/components/mode-toggle";
 import { GraduationCap } from "lucide-react";
 
+import { StudentNav } from "@/components/student-nav";
+
 export default function StudentLayout({
     children,
 }: {
@@ -18,11 +20,7 @@ export default function StudentLayout({
                             <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Student</p>
                         </div>
                     </div>
-                    <nav className="px-4 space-y-1">
-                        <a href="/student" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Dashboard</a>
-                        <a href="/student/results" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Results</a>
-                        <a href="/student/medical" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Medical</a>
-                    </nav>
+                    <StudentNav />
                 </div>
 
                 <div className="p-4 space-y-2 border-t border-border bg-background/50">
