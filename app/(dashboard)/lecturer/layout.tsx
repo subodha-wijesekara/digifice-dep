@@ -1,13 +1,18 @@
 import LogOutButton from "@/components/LogOutButton";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggleRow } from "@/components/ThemeToggleRow";
 import { BookOpen } from "lucide-react";
 import { LecturerTaskReminder } from "@/components/LecturerTaskReminder";
+import { UserProfile } from "@/components/UserProfile";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export default function LecturerLayout({
+export default async function LecturerLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const session = await getServerSession(authOptions);
+
     return (
         <div className="flex h-screen bg-background text-foreground">
             <aside className="w-64 border-r border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 hidden md:flex flex-col relative justify-between">
@@ -29,10 +34,14 @@ export default function LecturerLayout({
                 </div>
 
                 <div className="p-4 space-y-2 border-t border-border bg-background/50">
-                    <div className="flex items-center justify-between px-2 mb-2">
-                        <span className="text-xs font-semibold text-muted-foreground">Theme</span>
-                        <ModeToggle />
-                    </div>
+                    <UserProfile
+                        name={session?.user?.name}
+                        email={session?.user?.email}
+                        image={session?.user?.image}
+                        href="/lecturer/profile"
+                        className="mb-2"
+                    />
+                    <ThemeToggleRow className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive" />
                     <LogOutButton className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive" />
                 </div>
             </aside>

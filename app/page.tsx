@@ -2,6 +2,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { GraduationCap, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -17,30 +20,75 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-b from-blue-50 to-white">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <h1 className="text-4xl font-bold text-blue-900 mb-8 lg:mb-0">Digifice</h1>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <Link
-            href="/login"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Login <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">-&gt;</span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Access the portal
-            </p>
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      {/* Header */}
+      <header className="absolute top-0 w-full z-50 border-b border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white">
+            <GraduationCap className="h-6 w-6" />
+            <span className="text-xl font-bold tracking-tight">Digifice</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/login">
+              <Button variant="secondary" className="font-semibold">
+                Sign In
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </header>
 
-      <div className="mt-12 text-center">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Welcome to the Centralized Student Web Portal</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Manage your academic journey, access resources, and stay connected with the administration.
-        </p>
-      </div>
+      {/* Hero Section */}
+      <main className="flex-1 relative flex items-center justify-center min-h-[800px]">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/hero-bg.png"
+            alt="University students collaborating"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight drop-shadow-sm">
+              Digitize Your Academic Office Work
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
+              Handle all your academic office work digitally - from medical submissions to exam results issuance and more.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link href="/login">
+                <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg shadow-primary/20 transition-transform hover:scale-105">
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-muted/40 backdrop-blur">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <GraduationCap className="h-5 w-5" />
+              <span className="font-semibold text-foreground">Digifice</span>
+            </div>
+            <p className="text-sm text-muted-foreground text-center md:text-right">
+              &copy; {new Date().getFullYear()} Digifice University Management System. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

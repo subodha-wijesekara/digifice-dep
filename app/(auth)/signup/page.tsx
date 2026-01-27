@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, GraduationCap } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,45 +21,58 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(1, "Password is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
-export default function LoginPage() {
+export default function SignupPage() {
     const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const form = useForm<LoginFormValues>({
-        resolver: zodResolver(loginSchema),
+    const form = useForm<SignupFormValues>({
+        resolver: zodResolver(signupSchema),
         defaultValues: {
+            name: "",
             email: "",
             password: "",
+            confirmPassword: "",
         },
     });
 
-    const onSubmit = async (data: LoginFormValues) => {
+    const onSubmit = async (data: SignupFormValues) => {
         setIsLoading(true);
-        setError(null);
 
         try {
-            const result = await signIn("credentials", {
-                redirect: false,
-                email: data.email,
-                password: data.password,
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: data.name,
+                    email: data.email,
+                    password: data.password,
+                }),
             });
 
-            if (result?.error) {
-                setError("Invalid email or password");
+            const result = await res.json();
+
+            if (!res.ok) {
+                toast.error(result.error || "Registration failed");
             } else {
-                router.push("/");
-                router.refresh();
+                toast.success("Account created! Redirecting to login...");
+                setTimeout(() => {
+                    router.push("/login");
+                }, 2000);
             }
         } catch (error) {
-            setError("An unexpected error occurred");
+            toast.error("An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }
@@ -73,19 +86,27 @@ export default function LoginPage() {
                         <GraduationCap className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl text-center font-bold tracking-tight">Welcome back</CardTitle>
+                <CardTitle className="text-2xl text-center font-bold tracking-tight">Create an account</CardTitle>
                 <CardDescription className="text-center">
-                    Enter your credentials to access your account
+                    Enter your information to get started
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {error && (
-                    <div className="p-3 text-sm text-destructive border border-destructive/20 bg-destructive/10 rounded-md">
-                        {error}
-                    </div>
-                )}
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John Doe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="email"
@@ -112,13 +133,34 @@ export default function LoginPage() {
                                 </FormItem>
                             )}
                         />
+                        <FormField
+                            control={form.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Confirm Password</FormLabel>
+                                    <FormControl>
+                                        <Input type="password" placeholder="••••••••" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Sign In
+                            Create Account
                         </Button>
                     </form>
                 </Form>
             </CardContent>
+            <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
+                <div className="text-center text-sm">
+                    Already have an account?{" "}
+                    <Link href="/login" className="underline underline-offset-4 hover:text-primary transition-colors">
+                        Sign in
+                    </Link>
+                </div>
+            </CardFooter>
         </Card>
     );
 }

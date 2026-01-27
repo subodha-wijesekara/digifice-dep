@@ -1,12 +1,17 @@
 import LogOutButton from "@/components/LogOutButton";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggleRow } from "@/components/ThemeToggleRow";
 import { ShieldCheck } from "lucide-react";
+import { UserProfile } from "@/components/UserProfile";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export default function AdminLayout({
+export default async function AdminLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const session = await getServerSession(authOptions);
+
     return (
         <div className="flex h-screen bg-background text-foreground">
             <aside className="w-64 border-r border-border bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 hidden md:flex flex-col relative justify-between">
@@ -25,14 +30,18 @@ export default function AdminLayout({
                         <a href="/admin/medical" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Medical Review</a>
                         <a href="/admin/lecturers" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Lecturers</a>
                         <a href="/admin/students" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Students</a>
+                        <a href="/admin/requests" className="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground">Profile Requests</a>
                     </nav>
                 </div>
 
                 <div className="p-4 space-y-2 border-t border-border bg-background/50">
-                    <div className="flex items-center justify-between px-2 mb-2">
-                        <span className="text-xs font-semibold text-muted-foreground">Theme</span>
-                        <ModeToggle />
-                    </div>
+                    <UserProfile
+                        name={session?.user?.name}
+                        email={session?.user?.email}
+                        image={session?.user?.image}
+                        className="mb-2"
+                    />
+                    <ThemeToggleRow className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive" />
                     <LogOutButton className="text-muted-foreground hover:text-foreground hover:bg-destructive/10 hover:text-destructive" />
                 </div>
             </aside>
