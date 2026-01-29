@@ -39,7 +39,7 @@ export default async function Home() {
           />
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90" />
         </div>
 
         {/* Content */}

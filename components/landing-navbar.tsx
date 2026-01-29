@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { FontSizeToggle } from "@/components/font-size-toggle";
+import { DateTimeDisplay } from "@/components/date-time-display";
 import { usePathname } from "next/navigation";
 
 export function LandingNavbar() {
@@ -45,10 +46,9 @@ export function LandingNavbar() {
         <header className="absolute top-0 w-full z-50 bg-transparent pt-4">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
-                <div className={`flex items-center gap-2 ${textColorClass}`}>
-                    <GraduationCap className="h-6 w-6" />
+                <Link href="/" className={`flex items-center gap-2 ${textColorClass}`}>
                     <span className="text-xl font-medium tracking-tight">Digifice</span>
-                </div>
+                </Link>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8 ml-auto">
@@ -61,9 +61,12 @@ export function LandingNavbar() {
                             {link.label}
                         </Link>
                     ))}
-                    <div className={`flex items-center gap-2 pl-4 border-l ${isLanding ? "border-white/10" : "border-border"}`}>
-                        <ModeToggle className={iconButtonClass} />
-                        <FontSizeToggle className={iconButtonClass} />
+                    <div className={`flex items-center gap-4 pl-4 border-l ${isLanding ? "border-white/10" : "border-border"}`}>
+                        <DateTimeDisplay className={isLanding ? "text-white/90" : "text-muted-foreground"} />
+                        <div className="flex items-center gap-1">
+                            <ModeToggle className={iconButtonClass} />
+                            <FontSizeToggle className={iconButtonClass} />
+                        </div>
                     </div>
                 </nav>
 
@@ -79,7 +82,6 @@ export function LandingNavbar() {
                         <SheetContent side="right" className="w-full h-full sm:max-w-none border-none bg-background/98 backdrop-blur-xl p-0">
                             <SheetHeader className="p-6 border-b border-border flex flex-row items-center justify-between space-y-0">
                                 <SheetTitle className="text-foreground flex items-center gap-2 text-xl font-bold">
-                                    <GraduationCap className="h-6 w-6 text-primary" />
                                     Digifice
                                 </SheetTitle>
 

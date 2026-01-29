@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, GraduationCap } from "lucide-react";
+import { Loader2, GraduationCap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ export default function LoginPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -67,6 +68,11 @@ export default function LoginPage() {
 
     return (
         <div className="flex flex-col space-y-2 text-center">
+            <Button variant="ghost" className="self-start -ml-4 mb-4" asChild>
+                <Link href="/">
+                    &larr; Back to Home
+                </Link>
+            </Button>
             <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">
                 Enter your credentials to access your account
@@ -100,7 +106,29 @@ export default function LoginPage() {
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" placeholder="••••••••" {...field} />
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? "text" : "password"}
+                                                placeholder="••••••••"
+                                                {...field}
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                                <span className="sr-only">
+                                                    {showPassword ? "Hide password" : "Show password"}
+                                                </span>
+                                            </Button>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
