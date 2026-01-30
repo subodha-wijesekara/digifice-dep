@@ -55,20 +55,27 @@ export default function StudentNotificationsPage() {
                     </Card>
                 ) : (
                     notifications.map((notification) => (
-                        <Card key={notification._id} className={cn("transition-all", !notification.read && "border-l-4 border-l-primary bg-muted/10")}>
-                            <CardContent className="p-4 flex items-start gap-4">
-                                <div className="mt-1 shrink-0">
+                        <Card key={notification._id} className={cn("transition-all relative group", !notification.read && "border-l-4 border-l-primary bg-muted/10")}>
+                            <CardContent className="p-3 flex items-start gap-3">
+                                <div className="mt-0.5 shrink-0">
                                     {getIcon(notification.type)}
                                 </div>
-                                <div className="flex-1 space-y-1">
-                                    <div className="flex items-center justify-between">
+                                <div className="flex-1 space-y-0.5">
+                                    <div className="flex items-center justify-between pr-6">
                                         <p className="font-medium text-sm text-foreground">{notification.title}</p>
-                                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                                        <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">
                                             {format(new Date(notification.createdAt), 'MMM d, h:mm a')}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-muted-foreground">{notification.message}</p>
+                                    <p className="text-xs text-muted-foreground leading-snug">{notification.message}</p>
                                 </div>
+                                <button
+                                    onClick={() => setNotifications(prev => prev.filter(n => n._id !== notification._id))}
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded-full"
+                                    aria-label="Dismiss"
+                                >
+                                    <XCircle className="h-4 w-4 text-muted-foreground" />
+                                </button>
                             </CardContent>
                         </Card>
                     ))
