@@ -12,6 +12,8 @@ if (!Department) {
     console.log("Department model not loaded");
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         await connectToDB();
