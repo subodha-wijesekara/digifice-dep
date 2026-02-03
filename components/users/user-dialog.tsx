@@ -137,7 +137,7 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input placeholder="username" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -150,7 +150,7 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="john@example.com" {...field} />
+                                        <Input placeholder="username@digifice.com" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
