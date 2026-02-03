@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Upload, Layers } from "lucide-react";
+import { Search, UserPlus, Upload, Layers, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { UserDialog } from "@/components/users/user-dialog";
 import { StudentAssignmentDialog } from "@/components/dashboard/StudentAssignmentDialog";
-import { BulkUploadDialog } from "@/components/dashboard/BulkUploadDialog"; // Import this
+import { BulkUploadDialog } from "@/components/dashboard/BulkUploadDialog";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -31,7 +31,6 @@ import {
 import { User } from "@/components/users/columns";
 
 interface Student extends User {
-    // ... (unchanged)
     department?: {
         _id: string;
         name: string;
@@ -53,25 +52,42 @@ export default function StudentManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalStudents, setTotalStudents] = useState(0);
+
     // Dialog States
     const [userDialogOpen, setUserDialogOpen] = useState(false);
     const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false); // Add this state
+    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
 
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-    const fetchStudents = async () => {
-        // ... (unchanged)
+    const fetchStudents = async (page = 1) => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
             if (searchQuery) params.append('search', searchQuery);
+            params.append('page', page.toString());
+            params.append('limit', '25');
 
             const res = await fetch(`/api/admin/students?${params.toString()}`);
             const data = await res.json();
-            if (Array.isArray(data)) setStudents(data);
+
+            if (data.activeStudents || Array.isArray(data)) {
+                // Handle legacy array response just in case
+                setStudents(Array.isArray(data) ? data : data.students || []);
+                setTotalPages(1);
+            } else if (data.students) {
+                // New paginated response
+                setStudents(data.students);
+                setTotalPages(data.pagination.pages);
+                setCurrentPage(data.pagination.current);
+                setTotalStudents(data.pagination.total);
+            }
         } catch (error) {
             console.error("Failed to load students", error);
             toast.error("Failed to load students");
@@ -82,10 +98,16 @@ export default function StudentManagementPage() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchStudents();
+            fetchStudents(1); // Reset to page 1 on search
         }, 300);
         return () => clearTimeout(timer);
     }, [searchQuery]);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            fetchStudents(newPage);
+        }
+    };
 
     const handleCreate = () => {
         setSelectedStudent(null);
@@ -108,7 +130,6 @@ export default function StudentManagementPage() {
     };
 
     const confirmDelete = async () => {
-        // ... (unchanged)
         if (!itemToDelete) return;
         try {
             const res = await fetch(`/api/users/${itemToDelete}`, { method: "DELETE" });
@@ -159,7 +180,6 @@ export default function StudentManagementPage() {
 
             <div className="border rounded-md">
                 <Table>
-                    {/* ... (Table content unchanged) */}
                     <TableHeader>
                         <TableRow>
                             <TableHead>Student</TableHead>
@@ -185,7 +205,7 @@ export default function StudentManagementPage() {
                             </TableRow>
                         ) : (
                             students.map((student) => (
-                                <TableRow key={student._id}>
+                                <TableRow key={student._id} className="group hover:bg-muted/50 transition-colors">
                                     <TableCell>
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-9 w-9">
@@ -236,29 +256,33 @@ export default function StudentManagementPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button
-                                                variant="outline"
-                                                size="sm"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                title="Assign Modules"
                                                 onClick={() => handleManage(student)}
                                             >
-                                                <Layers className="h-3.5 w-3.5 mr-1" />
-                                                Assign
+                                                <Layers className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
-                                                size="sm"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                title="Edit Student"
                                                 onClick={() => handleEdit(student)}
                                             >
-                                                Edit
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
-                                                size="sm"
-                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                title="Delete Student"
                                                 onClick={() => handleDeleteClick(student._id)}
                                             >
-                                                Delete
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -269,10 +293,58 @@ export default function StudentManagementPage() {
                 </Table>
             </div>
 
+            {/* Pagination Controls */}
+            <div className="flex items-center justify-between border-t pt-4">
+                <div className="text-sm text-muted-foreground">
+                    Showing {students.length > 0 ? ((currentPage - 1) * 25) + 1 : 0} to {Math.min(currentPage * 25, totalStudents)} of {totalStudents} students
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1 || isLoading}
+                    >
+                        <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1 || isLoading}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="text-sm font-medium">
+                        Page {currentPage} of {totalPages || 1}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages || isLoading}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages || isLoading}
+                    >
+                        <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
             <UserDialog
                 open={userDialogOpen}
                 onOpenChange={setUserDialogOpen}
-                onSuccess={fetchStudents}
+                onSuccess={() => fetchStudents(currentPage)}
                 user={selectedStudent}
                 defaultRole="student"
             />
@@ -287,7 +359,7 @@ export default function StudentManagementPage() {
                     currentFacultyId={selectedStudent.department?.faculty?._id}
                     currentAcademicYear={selectedStudent.academicYear}
                     currentSemester={selectedStudent.semester}
-                    onSuccess={fetchStudents}
+                    onSuccess={() => fetchStudents(currentPage)}
                 />
             )}
 
@@ -295,7 +367,7 @@ export default function StudentManagementPage() {
                 open={isBulkDialogOpen}
                 onOpenChange={setIsBulkDialogOpen}
                 onSuccess={() => {
-                    fetchStudents();
+                    fetchStudents(currentPage);
                     setIsBulkDialogOpen(false);
                 }}
             />
